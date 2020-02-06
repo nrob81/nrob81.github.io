@@ -14,7 +14,6 @@ body {
   display: inline-block;
   background-color: white;
   height: 1em;
-  margin-left: .3em;
 }
 
 @keyframes "blink" {

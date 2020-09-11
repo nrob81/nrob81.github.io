@@ -1,17 +1,19 @@
-$(document).ready(function () {
+const exp = async function (path) {
+	await CefSharp.BindObjectAsync("explorer")
+	explorer.open(path).then(() => console.log('open()'))
+}
 
-	const exp = async function (path) {
-		console.log('async function...');
-		await CefSharp.BindObjectAsync("explorer");
+function callback(e) {
+    var e = window.e || e;
 
-		//The default is to camel case method names (the first letter of the method name is changed to lowercase)
-		explorer.open(path).then(() => console.log('open()'))
-	}
+    if (e.target.tagName !== 'A')
+        return;
 
-	$('a').on('click', async (event) => {
-		let linkPath = $(event.target).data('target');
-		console.log(linkPath);
-		await exp(linkPath);
-	});
+    exp(e.target.getAttribute('data-target'))
+}
 
-});
+if (document.addEventListener) {
+    document.addEventListener('click', callback, false)
+} else {
+    document.attachEvent('onclick', callback)
+}

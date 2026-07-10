@@ -26,7 +26,7 @@ for (const section of cv.querySelectorAll('section[data-command]')) {
 }
 
 // Progressive enhancement: swap the static CV for the terminal.
-cv.hidden = true;
+cv.classList.add('sr-only');
 terminal.hidden = false;
 
 function line(text, cls = '') {

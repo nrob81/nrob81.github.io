@@ -33,6 +33,17 @@ a { color: var(--accent); }
 .meta { color: var(--dim); margin-top: 0; }
 
 /* ---- terminal view ---- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 #terminal[hidden] { display: none; }
 
 #output h2 { color: var(--accent); font-size: 1em; margin: 0.75rem 0 0.25rem; }
@@ -84,4 +95,5 @@ a { color: var(--accent); }
     opacity: 0;
     border: 0;
     padding: 0;
+    font-size: 16px;
 }

@@ -57,7 +57,9 @@ a { color: var(--accent); }
     padding: 0;
 }
 
-#prompt-line { white-space: pre-wrap; margin-top: 0.75rem; }
+#prompt-line { margin-top: 0.75rem; }
+
+#typed { white-space: pre-wrap; }
 
 .blinking-cursor {
     display: inline-block;

@@ -1,13 +1,146 @@
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>root@nrcode.com</title>
-        <meta name="description" content="nrcode">
-        <meta name="author" content="Natkay Robert">
-        <link rel="stylesheet" href="styles.css?v=1.0">
-    </head>
-    <body>
-        <p>root@nrcode.com <span class="blinking-cursor"/></p>
-    </body>
-</html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Róbert Natkay — Full stack developer</title>
+    <meta name="description" content="Róbert Natkay, full stack developer from Komárno, Slovakia. PHP, TypeScript, Symfony, DDD. Founder of nrcode s.r.o. Coding professionally since 2007.">
+    <meta name="author" content="Róbert Natkay">
+    <link rel="canonical" href="https://www.nrcode.com/">
+    <meta property="og:title" content="Róbert Natkay — Full stack developer">
+    <meta property="og:description" content="Terminal-style interactive CV. PHP, TypeScript, Symfony, DDD. Founder of nrcode s.r.o.">
+    <meta property="og:url" content="https://www.nrcode.com/">
+    <link rel="stylesheet" href="styles.css?v=2.0">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Róbert Natkay",
+      "jobTitle": "Full stack developer",
+      "email": "mailto:robert@nrcode.com",
+      "url": "https://www.nrcode.com/",
+      "worksFor": { "@type": "Organization", "name": "nrcode s.r.o." },
+      "address": { "@type": "PostalAddress", "addressLocality": "Komárno", "addressCountry": "SK" },
+      "knowsLanguage": ["hu", "en", "sk"]
+    }
+    </script>
+</head>
+<body>
+    <main id="cv">
+        <header>
+            <h1>Róbert Natkay</h1>
+            <p>Full stack developer · Komárno, Slovakia</p>
+        </header>
 
+        <section id="whoami" data-command="whoami" data-desc="about me">
+            <h2>About</h2>
+            <p>Full stack developer based in Komárno, Slovakia, coding professionally since 2007. Founder of nrcode s.r.o.</p>
+            <p>I like shipping reliable software — verified with unit tests whenever time allows — and writing code that is easy to read and easy to change.</p>
+        </section>
+
+        <section id="experience" data-command="experience" data-desc="work history">
+            <h2>Experience</h2>
+            <article>
+                <h3>nrcode s.r.o. — founder &amp; full stack developer</h3>
+                <p class="meta">2013 – present · Komárno, Slovakia</p>
+                <ul>
+                    <li>Founded my own company; building software for clients ever since.</li>
+                </ul>
+            </article>
+            <article>
+                <h3>FatCamel s.r.o. — PHP / TypeScript / Python / C# / Android developer</h3>
+                <p class="meta">2020 – 2023 · Komárno, Slovakia</p>
+                <ul>
+                    <li>POS cash register for a webshop (TypeScript + Electron)</li>
+                    <li>Webshops (PHP) and a new webshop engine (Symfony)</li>
+                    <li>Database adapter (TypeScript + Python + RethinkDB)</li>
+                    <li>REST APIs (Slim)</li>
+                    <li>Android apps (Kotlin) and Windows apps (C#)</li>
+                    <li>Made the search on diderot.sk and bumm.sk thousands of times faster</li>
+                </ul>
+            </article>
+            <article>
+                <h3>Kominvent s.r.o. — full stack developer</h3>
+                <p class="meta">2013 – 2020 · Komárno, Slovakia</p>
+                <ul>
+                    <li>Software for an accounting office (PHP 7/8, Yii1/Yii2, Memcache)</li>
+                    <li>Tax-return calculation producing filled PDF + XML forms</li>
+                    <li>Invoicing app — <a href="https://kominvent.eu">kominvent.eu</a></li>
+                    <li>DzMV and DPPO tax calculators — <a href="https://jednoduche.sk">jednoduche.sk</a></li>
+                    <li>Internal admin tools making the staff's work easier</li>
+                    <li>VPS setup and operation: Debian, Apache/Nginx, MariaDB</li>
+                </ul>
+            </article>
+            <article>
+                <h3>Self-employed — PHP developer</h3>
+                <p class="meta">2007 – 2013 · Komárno, Slovakia</p>
+                <ul>
+                    <li>Built and operated Hungary's most popular, Mobilshow-award-winning mobile chat.</li>
+                </ul>
+            </article>
+            <article>
+                <h3>BitPiac Bt. — full stack developer</h3>
+                <p class="meta">2007 – 2008</p>
+                <ul>
+                    <li>Mobile websites commissioned by T-Mobile, Pannon and Vodafone.</li>
+                </ul>
+            </article>
+        </section>
+
+        <section id="skills" data-command="skills" data-desc="tech stack">
+            <h2>Skills</h2>
+            <ul>
+                <li>PHP — Yii / Yii2, Symfony, Slim</li>
+                <li>JavaScript / TypeScript — Electron</li>
+                <li>Python · C# · Kotlin</li>
+                <li>OOP · Domain-driven design (DDD)</li>
+                <li>MariaDB / MySQL · RethinkDB · Memcache</li>
+                <li>Debian · Apache · Nginx</li>
+            </ul>
+        </section>
+
+        <section id="projects" data-command="projects" data-desc="selected projects">
+            <h2>Projects</h2>
+            <ul>
+                <li><a href="https://kominvent.eu">kominvent.eu</a> — invoicing application</li>
+                <li><a href="https://jednoduche.sk">jednoduche.sk</a> — DzMV / DPPO tax calculators</li>
+                <li>Webshop POS system — TypeScript + Electron</li>
+                <li>Aquascape Water Calculator — Android app (<a href="aquacalc-privacy.html">privacy policy</a>)</li>
+                <li>Water Test Reader — Android app (<a href="watertestreader-privacy.html">privacy policy</a>)</li>
+            </ul>
+        </section>
+
+        <section id="languages" data-command="languages" data-desc="spoken languages">
+            <h2>Languages</h2>
+            <ul>
+                <li>Hungarian — native (C2)</li>
+                <li>English — B1</li>
+                <li>Slovak — A2</li>
+            </ul>
+        </section>
+
+        <section id="contact" data-command="contact" data-desc="get in touch">
+            <h2>Contact</h2>
+            <ul>
+                <li>Email: <a href="mailto:robert@nrcode.com">robert@nrcode.com</a></li>
+                <li>Location: Komárno, Slovakia</li>
+            </ul>
+        </section>
+
+        <section id="hobbies" data-command="hobbies" data-desc="when not coding">
+            <h2>Hobbies</h2>
+            <p>Fishing, aquascaping, sport.</p>
+        </section>
+    </main>
+
+    <div id="terminal" hidden>
+        <div id="output"></div>
+        <div id="prompt-line">
+            <label for="cmd" class="prompt">robert@nrcode.com:~$&nbsp;</label><span id="typed"></span><span class="blinking-cursor" aria-hidden="true"></span>
+            <input id="cmd" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="terminal input">
+        </div>
+    </div>
+
+    <script type="module" src="terminal.js?v=2.0"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reading aquarium water tests with computer vision — case study</title>
+    <meta name="description" content="Case study: Water Test Reader, an Android app that uses YOLO segmentation and LAB color matching to read colorimetric aquarium water test kits from a phone photo.">
+    <meta name="author" content="Róbert Natkay">
+    <link rel="canonical" href="https://www.nrcode.com/watertestreader-case-study.html">
+    <meta property="og:title" content="Reading aquarium water tests with computer vision — case study">
+    <meta property="og:description" content="How Water Test Reader turns a phone photo of a colorimetric water test into a reliable ppm reading, using on-device YOLO segmentation and LAB color science.">
+    <meta property="og:url" content="https://www.nrcode.com/watertestreader-case-study.html">
+    <link rel="stylesheet" href="styles.css?v=2.0">
+</head>
+<body>
+    <div id="bg3d" aria-hidden="true"></div>
+    <main id="cv">
+        <header>
+            <h1>Reading aquarium water tests with computer vision</h1>
+            <p>Case study · Water Test Reader (Android) · <a href="/">← nrcode.com</a></p>
+        </header>
+
+        <section id="context">
+            <h2>Context</h2>
+            <p>Aquarium hobbyists track water chemistry (nitrate, phosphate, pH, ...) with colorimetric test kits: you mix a sample with reagents and compare the resulting color against a printed reference scale. Reading that comparison by eye is subjective — lighting, screen calibration and the observer all shift the result, and the difference between two adjacent reference values can matter a lot for tank health.</p>
+            <p>Water Test Reader replaces the eyeball comparison with a phone photo: point the camera at the test card, and the app detects the reference scale and the sample, measures the color, and reports where it falls on the scale.</p>
+        </section>
+
+        <section id="challenge">
+            <h2>Challenge</h2>
+            <p>A phone photo is an uncontrolled input — variable lighting, angle, partial occlusion, reflections. Getting a reproducible ppm reading out of that means solving several problems before any color math is meaningful:</p>
+            <ul>
+                <li>reliably locating the reference circles/rectangles and the water sample in the frame, regardless of card orientation</li>
+                <li>sampling color from a patch that's actually representative, not a glare spot or a shadow</li>
+                <li>correcting for the ambient lighting's own color cast, which otherwise swamps the signal</li>
+                <li>knowing when a reading is untrustworthy instead of confidently returning a wrong number</li>
+            </ul>
+        </section>
+
+        <section id="approach">
+            <h2>Approach</h2>
+            <ul>
+                <li>an on-device YOLOv11 segmentation model (TFLite) detects the reference scale and the water sample directly in the photo — no manual cropping or alignment by the user</li>
+                <li>color is measured in LAB space for perceptual accuracy, with sampling designed to reject noisy or unstable regions of the photo</li>
+                <li>a matching step projects the measured color onto the reference scale and validates that the reading is actually trustworthy, rather than silently returning a best guess</li>
+                <li>a correction step compensates for the ambient lighting's own color cast before matching</li>
+                <li>the domain layer is built around a typed result model (success/failure with explicit reasons), keeping detection and measurement logic decoupled from the UI, in their own Kotlin modules</li>
+                <li>the color science was tuned empirically against known reference solutions rather than assumed up front</li>
+            </ul>
+        </section>
+
+        <section id="results">
+            <h2>Results</h2>
+            <ul>
+                <li>a working end-to-end pipeline: photo → detection → color measurement → matched reference position with an uncertainty estimate</li>
+                <li>on-device inference, no photo ever leaves the phone</li>
+                <li>shipped on the Play Store, currently focused on the best-validated test kit with more brands and test types planned</li>
+            </ul>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Interested in the computer-vision or Android work? <a href="mailto:robert@nrcode.com">robert@nrcode.com</a> · <a href="https://play.google.com/store/apps/details?id=com.nrcode.watertestreader">Water Test Reader on Play Store</a></p>
+        </section>
+    </main>
+
+    <script type="module" src="bg3d.js?v=2.0"></script>
+    <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "af2a1edc359b4f63a9ae7429ca5b2a43"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

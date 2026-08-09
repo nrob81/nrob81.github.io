@@ -158,7 +158,19 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin=""></script>
 <script type="module">
+  import {
+    sunPosition,
+    buildingShadowPolygon,
+    estimateBuildingHeight,
+    isCacheStale,
+  } from './komarom-shadows-logic.js';
+
   const KOMARNO_CENTER = [47.7574, 18.1298];
+  const BBOX = { south: 47.7480, west: 18.1034, north: 47.7720, east: 18.1562 };
+  const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+  const BUILDINGS_CACHE_KEY = 'komarom_shadows_buildings_v1';
+
+  const statusEl = document.getElementById('status');
 
   const map = L.map('map', { preferCanvas: true }).setView(KOMARNO_CENTER, 15);
 
@@ -167,7 +179,93 @@
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
 
-  document.getElementById('status').textContent = 'map ready — building data not loaded yet';
+  statusEl.textContent = 'map ready — building data not loaded yet';
+
+  async function fetchBuildingElements() {
+    const cachedRaw = localStorage.getItem(BUILDINGS_CACHE_KEY);
+    if (cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw);
+        if (
+          typeof cached.fetchedAt === 'number' &&
+          Array.isArray(cached.elements) &&
+          !isCacheStale(cached.fetchedAt, Date.now())
+        ) {
+          return cached.elements;
+        }
+      } catch (err) {
+        console.error('komarom-shadows: discarding malformed building cache:', err);
+      }
+    }
+
+    const query = `[out:json][timeout:25];way["building"](${BBOX.south},${BBOX.west},${BBOX.north},${BBOX.east});out geom;`;
+    const response = await fetch(OVERPASS_URL, {
+      method: 'POST',
+      body: `data=${encodeURIComponent(query)}`,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+    if (!response.ok) throw new Error(`Overpass fetch failed: ${response.status}`);
+    const data = await response.json();
+    const elements = data.elements;
+
+    try {
+      localStorage.setItem(BUILDINGS_CACHE_KEY, JSON.stringify({ fetchedAt: Date.now(), elements }));
+    } catch (err) {
+      console.error('komarom-shadows: could not cache building data:', err);
+    }
+    return elements;
+  }
+
+  const buildings = [];
+
+  function renderShadowsForTime(date) {
+    const { altitude, azimuth } = sunPosition(date, KOMARNO_CENTER[0], KOMARNO_CENTER[1]);
+    for (const b of buildings) {
+      const shadowCoords = buildingShadowPolygon(b.footprint, b.heightM, altitude, azimuth);
+      if (shadowCoords) {
+        if (b.shadowLayer) {
+          b.shadowLayer.setLatLngs(shadowCoords);
+        } else {
+          b.shadowLayer = L.polygon(shadowCoords, {
+            color: 'transparent',
+            fillColor: '#1b1813',
+            fillOpacity: 0.35,
+            interactive: false,
+          }).addTo(map);
+          b.shadowLayer.bringToBack();
+        }
+      } else if (b.shadowLayer) {
+        map.removeLayer(b.shadowLayer);
+        b.shadowLayer = null;
+      }
+    }
+  }
+
+  async function init() {
+    try {
+      const elements = await fetchBuildingElements();
+      for (const el of elements) {
+        if (!el.geometry || el.geometry.length < 3) continue;
+        const footprint = el.geometry.map((pt) => [pt.lat, pt.lon]);
+        const heightM = estimateBuildingHeight(el.tags);
+        const footprintLayer = L.polygon(footprint, {
+          color: '#b96d17',
+          weight: 1,
+          fillColor: '#f2a63d',
+          fillOpacity: 0.25,
+          interactive: false,
+        }).addTo(map);
+        buildings.push({ footprint, heightM, footprintLayer, shadowLayer: null });
+      }
+      statusEl.textContent = `${buildings.length} buildings loaded`;
+      renderShadowsForTime(new Date());
+    } catch (err) {
+      console.error('komarom-shadows: failed to load buildings:', err);
+      statusEl.textContent = 'could not load building data — try reloading the page';
+    }
+  }
+
+  init();
 </script>
 
 </body>

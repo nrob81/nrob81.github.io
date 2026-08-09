@@ -272,10 +272,13 @@
       if (pending) return;
       pending = true;
       requestAnimationFrame(() => {
-        const t = new Date(Number(sliderEl.value));
-        timeLabelEl.textContent = formatTime(t);
-        renderShadowsForTime(t);
-        pending = false;
+        try {
+          const t = new Date(Number(sliderEl.value));
+          timeLabelEl.textContent = formatTime(t);
+          renderShadowsForTime(t);
+        } finally {
+          pending = false;
+        }
       });
     });
   }

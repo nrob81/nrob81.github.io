@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Komárom shadow map</title>
+    <meta name="description" content="Real building footprints in Komárno, with live-computed sun and shadow for any time today — good for checking whether a spot will still be shady later.">
+    <meta name="author" content="Róbert Natkay">
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://www.nrcode.com/komarom-shadows.html">
+    <meta property="og:title" content="Komárom shadow map">
+    <meta property="og:description" content="Real building footprints in Komárno, with live-computed sun and shadow for any time today — good for checking whether a spot will still be shady later.">
+    <meta property="og:url" content="https://www.nrcode.com/komarom-shadows.html">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="" />
+</head>
+<body>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --surface: #faf8f3;
+    --ink: #241f18;
+    --muted: #6b6155;
+    --line: rgba(36, 31, 24, 0.14);
+    --accent: #b96d17;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14120e;
+      --surface: #1b1813;
+      --ink: #ece7dc;
+      --muted: #a39b8b;
+      --line: rgba(236, 231, 220, 0.14);
+      --accent: #f2a63d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14120e;
+    --surface: #1b1813;
+    --ink: #ece7dc;
+    --muted: #a39b8b;
+    --line: rgba(236, 231, 220, 0.14);
+    --accent: #f2a63d;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .font-mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", "Roboto Mono", monospace;
+  }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0.3rem 0 0;
+    text-wrap: balance;
+  }
+
+  .subhead {
+    color: var(--muted);
+    max-width: 65ch;
+  }
+
+  #map {
+    width: 100%;
+    height: 70vh;
+    min-height: 420px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  #time-slider {
+    flex: 1 1 260px;
+  }
+
+  #time-label {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    min-width: 6ch;
+  }
+
+  #status {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .back {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  .back:hover { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <a class="back" href="/">&larr; nrcode.com</a>
+
+  <header>
+    <p class="eyebrow font-mono">live · OpenStreetMap + Overpass</p>
+    <h1>Komárom shadow map</h1>
+    <p class="subhead">
+      Real building footprints for Komárno, with sun and cast shadows
+      computed live for any time today. Most buildings on OpenStreetMap
+      have no recorded height, so shadow length here is an estimate
+      (from building height where known, otherwise a guess from
+      typical building size) — useful for a rough sense of "sunny or
+      shady," not a survey-grade prediction.
+    </p>
+  </header>
+
+  <div id="map"></div>
+
+  <div class="controls">
+    <input type="range" id="time-slider" disabled />
+    <span id="time-label" class="font-mono">--:--</span>
+  </div>
+
+  <p id="status">loading map…</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin=""></script>
+<script type="module">
+  const KOMARNO_CENTER = [47.7574, 18.1298];
+
+  const map = L.map('map', { preferCanvas: true }).setView(KOMARNO_CENTER, 15);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  document.getElementById('status').textContent = 'map ready — building data not loaded yet';
+</script>
+
+</body>
+</html>

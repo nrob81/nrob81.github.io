@@ -160,6 +160,7 @@
 <script type="module">
   import {
     sunPosition,
+    sunriseSunset,
     buildingShadowPolygon,
     estimateBuildingHeight,
     isCacheStale,
@@ -241,6 +242,44 @@
     }
   }
 
+  const sliderEl = document.getElementById('time-slider');
+  const timeLabelEl = document.getElementById('time-label');
+
+  function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function setupTimeSlider() {
+    const todayUTCMidnight = new Date(Date.UTC(
+      new Date().getUTCFullYear(),
+      new Date().getUTCMonth(),
+      new Date().getUTCDate()
+    ));
+    const { sunrise, sunset } = sunriseSunset(todayUTCMidnight, KOMARNO_CENTER[0], KOMARNO_CENTER[1]);
+
+    sliderEl.min = String(sunrise.getTime());
+    sliderEl.max = String(sunset.getTime());
+    sliderEl.step = '60000';
+
+    const now = Date.now();
+    const clamped = Math.min(Math.max(now, sunrise.getTime()), sunset.getTime());
+    sliderEl.value = String(clamped);
+    sliderEl.disabled = false;
+    timeLabelEl.textContent = formatTime(new Date(clamped));
+
+    let pending = false;
+    sliderEl.addEventListener('input', () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        const t = new Date(Number(sliderEl.value));
+        timeLabelEl.textContent = formatTime(t);
+        renderShadowsForTime(t);
+        pending = false;
+      });
+    });
+  }
+
   async function init() {
     try {
       const elements = await fetchBuildingElements();
@@ -258,7 +297,8 @@
         buildings.push({ footprint, heightM, footprintLayer, shadowLayer: null });
       }
       statusEl.textContent = `${buildings.length} buildings loaded`;
-      renderShadowsForTime(new Date());
+      setupTimeSlider();
+      renderShadowsForTime(new Date(Number(sliderEl.value)));
     } catch (err) {
       console.error('komarom-shadows: failed to load buildings:', err);
       statusEl.textContent = 'could not load building data — try reloading the page';

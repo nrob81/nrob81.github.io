@@ -9,3 +9,6 @@
 oneletrajz-*.pdf
 
 /.worktrees/
+
+# Internal planning docs (client/business details) — never publish
+/docs/

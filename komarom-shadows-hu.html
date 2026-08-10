@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Komáromi árnyéktérkép</title>
+    <meta name="description" content="Valós épületalaprajzok Komáromhoz (SK), élőben számított nap- és árnyékhelyzettel a mai nap bármely időpontjára — hasznos, ha tudni akarod, egy hely napos vagy árnyékos lesz-e később.">
+    <meta name="author" content="Róbert Natkay">
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://www.nrcode.com/komarom-shadows-hu.html">
+    <meta property="og:title" content="Komáromi árnyéktérkép">
+    <meta property="og:description" content="Valós épületalaprajzok Komáromhoz (SK), élőben számított nap- és árnyékhelyzettel a mai nap bármely időpontjára — hasznos, ha tudni akarod, egy hely napos vagy árnyékos lesz-e később.">
+    <meta property="og:url" content="https://www.nrcode.com/komarom-shadows-hu.html">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="" />
+    <link rel="stylesheet" href="./komarom-shadows.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top-links">
+    <a class="back" href="/">&larr; nrcode.com</a>
+    <span class="lang-switch">
+      <a href="./komarom-shadows.html">🇬🇧 EN</a>
+      <a href="./komarom-shadows-hu.html" aria-current="page">🇭🇺 HU</a>
+      <a href="./komarom-shadows-sk.html">🇸🇰 SK</a>
+    </span>
+  </div>
+
+  <header>
+    <p class="eyebrow font-mono">élő · OpenStreetMap + Overpass</p>
+    <h1>Komáromi árnyéktérkép</h1>
+    <p class="subhead">
+      Valós épület-alaprajzok Komáromhoz, élőben számított nappal és
+      vetett árnyékokkal a mai nap bármely időpontjára. A legtöbb
+      OpenStreetMap-épülethez nincs rögzített magasság, ezért az
+      árnyékhossz itt becslés (ismert épületmagasságból, vagy ha az
+      nincs, a jellemző épületméretből) — jó egy hozzávetőleges
+      "napos vagy árnyékos" érzéshez, nem geodéziai pontosságú előrejelzés.
+    </p>
+  </header>
+
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="dusk-overlay"></div>
+    <div id="loading-overlay">
+      <p id="loading-text" class="font-mono">térkép betöltése…</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="range" id="time-slider" disabled />
+    <span id="time-label" class="font-mono">--:--</span>
+  </div>
+
+  <p id="status">térkép betöltése…</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin=""></script>
+<script>
+  window.KOMAROM_STRINGS = {
+    locale: 'hu-HU',
+    mapReady: 'térkép kész — épületadatok még nincsenek betöltve',
+    downloading: (p) => p.percent != null
+      ? `épületadatok letöltése — ${p.percent}%`
+      : `épületadatok letöltése — ${p.megabytes.toFixed(1)} MB`,
+    overpassBusy: (status) => `Overpass túlterhelt (${status}) — újrapróbálkozás…`,
+    rendering: (p) => p.complete
+      ? `${p.total.toLocaleString('hu-HU')} épület betöltve`
+      : `épületek renderelése — ${p.done.toLocaleString('hu-HU')} / ${p.total.toLocaleString('hu-HU')}`,
+    loadError: (msg) => `nem sikerült betölteni az épületadatokat — ${msg} — próbáld újratölteni az oldalt`,
+  };
+</script>
+<script type="module" src="./komarom-shadows-app.js"></script>
+
+</body>
+</html>

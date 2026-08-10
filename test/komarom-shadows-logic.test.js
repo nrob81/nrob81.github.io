@@ -8,6 +8,13 @@ import {
   buildingShadowPolygon,
   estimateBuildingHeight,
   isCacheStale,
+  shadowOpacity,
+  duskIntensity,
+  downloadProgress,
+  renderProgress,
+  toCacheableElement,
+  isTransientHttpStatus,
+  retryDelayMs,
 } from '../komarom-shadows-logic.js';
 
 const LAT = 47.7574;
@@ -84,6 +91,32 @@ test('buildingShadowPolygon returns null when the sun is below the horizon', () 
   assert.equal(buildingShadowPolygon(square, 10, -5, 180), null);
 });
 
+test('buildingShadowPolygon caps shadow length near the horizon instead of growing unbounded', () => {
+  const square = [[47.750, 18.130], [47.7501, 18.130], [47.7501, 18.1301], [47.750, 18.1301]];
+  // At 1deg altitude, uncapped length would be 10 / tan(1deg) =~ 573m.
+  const shadow = buildingShadowPolygon(square, 10, 1, 180);
+  const footprintMaxLat = Math.max(...square.map((p) => p[0]));
+  const shadowMaxLat = Math.max(...shadow.map((p) => p[0]));
+  const shadowLengthM = (shadowMaxLat - footprintMaxLat) * 111320;
+  assert.ok(shadowLengthM < 100, `shadow length was ${shadowLengthM}m, expected it capped well under the uncapped ~573m`);
+});
+
+test('shadowOpacity is near-full when the sun is high', () => {
+  assert.ok(shadowOpacity(45) > 0.3, `opacity was ${shadowOpacity(45)}`);
+});
+
+test('shadowOpacity fades toward the horizon', () => {
+  assert.ok(shadowOpacity(1) < shadowOpacity(45), `low-sun opacity ${shadowOpacity(1)} should be less than high-sun opacity ${shadowOpacity(45)}`);
+});
+
+test('duskIntensity is 0 when the sun is high', () => {
+  assert.equal(duskIntensity(45), 0);
+});
+
+test('duskIntensity rises toward 1 as the sun nears the horizon', () => {
+  assert.ok(duskIntensity(1) > 0.8, `duskIntensity(1) was ${duskIntensity(1)}`);
+});
+
 test('estimateBuildingHeight prefers the height tag', () => {
   assert.equal(estimateBuildingHeight({ height: '12' }), 12);
 });
@@ -95,6 +128,59 @@ test('estimateBuildingHeight falls back to building:levels times 3', () => {
 test('estimateBuildingHeight defaults to 6 when no tags are present', () => {
   assert.equal(estimateBuildingHeight({}), 6);
   assert.equal(estimateBuildingHeight(undefined), 6);
+});
+
+test('downloadProgress reports a percent when total size is known', () => {
+  assert.deepEqual(downloadProgress(2_500_000, 10_000_000), { percent: 25, megabytes: 2.5 });
+});
+
+test('downloadProgress has a null percent when total size is unknown', () => {
+  assert.deepEqual(downloadProgress(2_500_000, 0), { percent: null, megabytes: 2.5 });
+});
+
+test('renderProgress reports done/total and whether rendering is complete', () => {
+  assert.deepEqual(renderProgress(3200, 10122), { done: 3200, total: 10122, complete: false });
+});
+
+test('renderProgress is complete once done reaches total', () => {
+  assert.deepEqual(renderProgress(10122, 10122), { done: 10122, total: 10122, complete: true });
+});
+
+test('toCacheableElement keeps geometry rounded to 5 decimals and only the height-relevant tags', () => {
+  const el = {
+    type: 'way',
+    id: 123,
+    bounds: { minlat: 1, minlon: 1, maxlat: 2, maxlon: 2 },
+    nodes: [1, 2, 3],
+    geometry: [{ lat: 47.75394642, lon: 18.13227108 }],
+    tags: { height: '12', building: 'yes', 'addr:city': 'Komárno', 'building:levels': '4' },
+  };
+  assert.deepEqual(toCacheableElement(el), {
+    geometry: [{ lat: 47.75395, lon: 18.13227 }],
+    tags: { height: '12', 'building:levels': '4' },
+  });
+});
+
+test('toCacheableElement omits tags entirely when none of the relevant keys are present', () => {
+  const el = { geometry: [{ lat: 47.75, lon: 18.13 }], tags: { building: 'yes' } };
+  assert.deepEqual(toCacheableElement(el), { geometry: [{ lat: 47.75, lon: 18.13 }] });
+});
+
+test('isTransientHttpStatus is true for 502/503/504 gateway errors', () => {
+  assert.equal(isTransientHttpStatus(502), true);
+  assert.equal(isTransientHttpStatus(503), true);
+  assert.equal(isTransientHttpStatus(504), true);
+});
+
+test('isTransientHttpStatus is false for client errors and success', () => {
+  assert.equal(isTransientHttpStatus(400), false);
+  assert.equal(isTransientHttpStatus(404), false);
+  assert.equal(isTransientHttpStatus(200), false);
+});
+
+test('retryDelayMs grows with attempt number', () => {
+  assert.ok(retryDelayMs(0) < retryDelayMs(1));
+  assert.ok(retryDelayMs(1) < retryDelayMs(2));
 });
 
 test('isCacheStale is false within 30 days, true past it', () => {

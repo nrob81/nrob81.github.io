@@ -124,12 +124,31 @@ export function convexHull(points) {
   return lower.concat(upper);
 }
 
+const MAX_SHADOW_LEN_M = 90;
+const LOW_SUN_THRESHOLD_DEG = 20;
+
 export function buildingShadowPolygon(footprint, heightM, sunAltitudeDeg, sunAzimuthDeg) {
   if (sunAltitudeDeg <= 0) return null;
-  const shadowLenM = heightM / Math.tan(sunAltitudeDeg * DEG);
+  const shadowLenM = Math.min(heightM / Math.tan(sunAltitudeDeg * DEG), MAX_SHADOW_LEN_M);
   const shadowBearing = norm360(sunAzimuthDeg + 180);
   const offset = footprint.map(([lat, lon]) => offsetPoint(lat, lon, shadowLenM, shadowBearing));
   return convexHull(footprint.concat(offset));
+}
+
+// Fades shadow fill toward the horizon so a capped, near-flat shadow reads
+// as dusk haze rather than an abrupt geometric cutoff.
+export function shadowOpacity(sunAltitudeDeg, maxOpacity = 0.35, minOpacity = 0.08) {
+  if (sunAltitudeDeg <= 0) return minOpacity;
+  const t = Math.min(sunAltitudeDeg / LOW_SUN_THRESHOLD_DEG, 1);
+  return minOpacity + (maxOpacity - minOpacity) * t;
+}
+
+// 0 when the sun is well clear of the horizon, ramping to 1 right at it —
+// drives a golden-hour tint over the map at sunrise/sunset.
+export function duskIntensity(sunAltitudeDeg) {
+  if (sunAltitudeDeg >= LOW_SUN_THRESHOLD_DEG) return 0;
+  if (sunAltitudeDeg <= 0) return 1;
+  return 1 - sunAltitudeDeg / LOW_SUN_THRESHOLD_DEG;
 }
 
 export function estimateBuildingHeight(tags) {
@@ -144,6 +163,47 @@ export function estimateBuildingHeight(tags) {
   return 6;
 }
 
+export function isTransientHttpStatus(status) {
+  return status === 502 || status === 503 || status === 504;
+}
+
+export function retryDelayMs(attempt) {
+  return 1000 * 2 ** attempt;
+}
+
 export function isCacheStale(fetchedAt, now, maxAgeMs = 30 * 24 * 60 * 60 * 1000) {
   return now - fetchedAt > maxAgeMs;
+}
+
+// Numbers only — callers format these into whatever language/wording they need.
+export function downloadProgress(loadedBytes, totalBytes) {
+  return {
+    percent: totalBytes > 0 ? Math.round((loadedBytes / totalBytes) * 100) : null,
+    megabytes: loadedBytes / 1_000_000,
+  };
+}
+
+export function renderProgress(done, total) {
+  return { done, total, complete: done >= total };
+}
+
+// Only geometry and the two height-relevant tags survive into localStorage —
+// Overpass "out geom" elements also carry id/bounds/nodes/full tag sets that
+// roughly triple cache size for no benefit downstream (see toCacheableElement
+// callers, which only ever read .geometry and .tags.height/['building:levels']).
+const CACHE_RELEVANT_TAGS = ['height', 'building:levels'];
+
+export function toCacheableElement(el) {
+  const out = {
+    geometry: el.geometry.map((p) => ({
+      lat: Math.round(p.lat * 1e5) / 1e5,
+      lon: Math.round(p.lon * 1e5) / 1e5,
+    })),
+  };
+  const tags = {};
+  for (const key of CACHE_RELEVANT_TAGS) {
+    if (el.tags && el.tags[key] !== undefined) tags[key] = el.tags[key];
+  }
+  if (Object.keys(tags).length > 0) out.tags = tags;
+  return out;
 }

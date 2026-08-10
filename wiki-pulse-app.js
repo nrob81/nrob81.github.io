@@ -31,10 +31,19 @@ const markers = []; // { lat, lng, bornAt }
 
 let phi = 0;
 
+// Tracked separately from the canvas element's own width/height attributes:
+// cobe reads render dimensions from `state.width`/`state.height` on every
+// frame (see cobe's official demo, which mirrors these into onRender), it
+// does not infer them from the canvas DOM element. Both the backing-store
+// attributes (for WebGL resolution) and these state fields (for cobe's
+// internal shader math) need to be kept in sync on resize.
+let renderWidth = canvas.clientWidth * 2;
+let renderHeight = canvas.clientHeight * 2;
+
 const globe = createGlobe(canvas, {
   devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
-  width: canvas.clientWidth * 2,
-  height: canvas.clientHeight * 2,
+  width: renderWidth,
+  height: renderHeight,
   phi: 0,
   theta: 0.3,
   dark: 1,
@@ -50,6 +59,8 @@ const globe = createGlobe(canvas, {
       phi += ROTATE_SPEED;
     }
     state.phi = phi;
+    state.width = renderWidth;
+    state.height = renderHeight;
 
     const now = Date.now();
     for (let i = markers.length - 1; i >= 0; i--) {
@@ -63,8 +74,10 @@ const globe = createGlobe(canvas, {
 });
 
 window.addEventListener('resize', () => {
-  canvas.width = canvas.clientWidth * 2;
-  canvas.height = canvas.clientHeight * 2;
+  renderWidth = canvas.clientWidth * 2;
+  renderHeight = canvas.clientHeight * 2;
+  canvas.width = renderWidth;
+  canvas.height = renderHeight;
 });
 
 function addMarker(event) {
@@ -91,14 +104,29 @@ function addTickerEntry(event) {
   }
 }
 
+// EventSource auto-reconnects and re-fires onerror on each failed attempt,
+// racing against the 500ms display interval. Track connection state
+// explicitly so the "connection lost" message persists for the whole time
+// the stream is actually down, instead of being overwritten a moment later.
+let connected = true;
+
 function updateRateDisplay() {
+  if (!connected) {
+    rateEl.textContent = 'connection lost — retrying…';
+    return;
+  }
   const rate = rollingRate.rate(Date.now());
   rateEl.textContent = `~${Math.round(rate)} edits/sec worldwide`;
 }
 setInterval(updateRateDisplay, 500);
 
 const source = new EventSource(STREAM_URL);
+source.onopen = () => {
+  connected = true;
+};
 source.onmessage = (msg) => {
+  connected = true;
+
   let event;
   try {
     event = JSON.parse(msg.data);
@@ -114,5 +142,5 @@ source.onmessage = (msg) => {
   addTickerEntry(event);
 };
 source.onerror = () => {
-  rateEl.textContent = 'connection lost — retrying…';
+  connected = false;
 };

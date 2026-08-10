@@ -11,6 +11,7 @@ import {
   createRollingRate,
   pulseOpacity,
 } from './wiki-pulse-logic.js';
+import { WIKI_COUNTRIES } from './wiki-pulse-countries.js';
 
 const STREAM_URL = 'https://stream.wikimedia.org/v2/stream/recentchange';
 const PULSE_BUDGET_PER_SEC = 8;
@@ -24,6 +25,7 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canvas = document.getElementById('globe-canvas');
 const rateEl = document.getElementById('edit-rate');
 const tickerEl = document.getElementById('ticker');
+const countryFilterEl = document.getElementById('country-filter');
 
 const budget = createPulseBudget(PULSE_BUDGET_PER_SEC);
 const rollingRate = createRollingRate(1000);
@@ -134,7 +136,28 @@ function addMarker(event) {
   markers.push({ lat: country.lat, lng: country.lng, bornAt: Date.now() });
 }
 
+const allOption = document.createElement('option');
+allOption.value = '';
+allOption.textContent = 'All countries';
+countryFilterEl.appendChild(allOption);
+
+Object.entries(WIKI_COUNTRIES)
+  .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+  .forEach(([wiki, country]) => {
+    const opt = document.createElement('option');
+    opt.value = wiki;
+    opt.textContent = country.name;
+    countryFilterEl.appendChild(opt);
+  });
+
+let tickerFilterWiki = '';
+countryFilterEl.addEventListener('change', () => {
+  tickerFilterWiki = countryFilterEl.value;
+  tickerEl.textContent = '';
+});
+
 function addTickerEntry(event) {
+  if (tickerFilterWiki && event.wiki !== tickerFilterWiki) return;
   const li = document.createElement('li');
   const lang = event.wiki.slice(0, -'wiki'.length);
   const a = document.createElement('a');

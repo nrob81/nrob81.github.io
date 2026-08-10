@@ -158,6 +158,15 @@ h1 {
   color: var(--muted);
 }
 
+#country-filter {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+}
+
 #ticker {
   list-style: none;
   margin: 0;

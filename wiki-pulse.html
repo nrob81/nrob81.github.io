@@ -32,13 +32,18 @@
     </p>
   </header>
 
-  <div id="globe-wrap">
-    <canvas id="globe-canvas"></canvas>
+  <div id="panels">
+    <div id="globe-panel">
+      <div id="globe-wrap">
+        <canvas id="globe-canvas"></canvas>
+      </div>
+    </div>
+
+    <div id="ticker-panel">
+      <p id="edit-rate" class="font-mono">connecting…</p>
+      <ul id="ticker"></ul>
+    </div>
   </div>
-
-  <p id="edit-rate" class="font-mono">connecting…</p>
-
-  <ul id="ticker"></ul>
 </div>
 
 <script type="module" src="./wiki-pulse-app.js"></script>

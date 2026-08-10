@@ -44,6 +44,40 @@ const DPR = Math.min(window.devicePixelRatio || 1, 2);
 let renderWidth = canvas.clientWidth * DPR;
 let renderHeight = canvas.clientHeight * DPR;
 
+// Pointer-drag rotation, following cobe's own documented pattern: auto-spin
+// pauses while a drag is in progress, and the drag's horizontal movement is
+// added to phi as a persistent offset once released — so the globe stays
+// wherever the visitor left it instead of snapping back.
+let pointerDown = false;
+let pointerStartX = 0;
+let dragPhiOffset = 0;
+let dragStartOffset = 0;
+
+canvas.style.cursor = 'grab';
+canvas.style.touchAction = 'none'; // let pointer events drive dragging on touch, not page scroll
+
+canvas.addEventListener('pointerdown', (e) => {
+  pointerDown = true;
+  pointerStartX = e.clientX;
+  dragStartOffset = dragPhiOffset;
+  canvas.style.cursor = 'grabbing';
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointerup', (e) => {
+  pointerDown = false;
+  canvas.style.cursor = 'grab';
+  canvas.releasePointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointercancel', () => {
+  pointerDown = false;
+  canvas.style.cursor = 'grab';
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (!pointerDown) return;
+  const deltaX = e.clientX - pointerStartX;
+  dragPhiOffset = dragStartOffset + deltaX / 200;
+});
+
 let globe = null;
 try {
   globe = createGlobe(canvas, {
@@ -61,10 +95,10 @@ try {
     glowColor: [0.3, 0.3, 0.32],
     markers: [],
     onRender(state) {
-      if (!reducedMotion) {
+      if (!reducedMotion && !pointerDown) {
         phi += ROTATE_SPEED;
       }
-      state.phi = phi;
+      state.phi = phi + dragPhiOffset;
       state.width = renderWidth;
       state.height = renderHeight;
 

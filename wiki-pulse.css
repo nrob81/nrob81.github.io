@@ -78,6 +78,17 @@ h1 {
   max-width: 65ch;
 }
 
+#panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+#globe-panel {
+  display: flex;
+  justify-content: center;
+}
+
 #globe-wrap {
   position: relative;
   width: 100%;
@@ -101,6 +112,44 @@ h1 {
   color: var(--muted);
   max-width: 80%;
   margin: 0;
+}
+
+#ticker-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Side by side on wide viewports: the globe runs oversized and clipped by
+   #globe-panel's overflow, so only its left ~2/3 shows, like it continues
+   off past the ticker column rather than sitting in its own boxed tile. */
+@media (min-width: 720px) {
+  #panels {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  #globe-panel {
+    flex: 1 1 60%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  #globe-wrap {
+    width: 160%;
+    max-width: none;
+    margin: 0;
+  }
+
+  #ticker-panel {
+    flex: 0 0 300px;
+  }
+
+  #ticker {
+    flex: 1;
+    max-height: none;
+  }
 }
 
 #edit-rate {

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wiki pulse globe</title>
+    <meta name="description" content="A live globe that pulses at the approximate location of every Wikipedia edit happening right now, worldwide.">
+    <meta name="author" content="Róbert Natkay">
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://www.nrcode.com/wiki-pulse.html">
+    <meta property="og:title" content="Wiki pulse globe">
+    <meta property="og:description" content="A live globe that pulses at the approximate location of every Wikipedia edit happening right now, worldwide.">
+    <meta property="og:url" content="https://www.nrcode.com/wiki-pulse.html">
+    <link rel="stylesheet" href="./wiki-pulse.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top-links">
+    <a class="back" href="/">&larr; nrcode.com</a>
+  </div>
+
+  <header>
+    <p class="eyebrow font-mono">live · Wikimedia EventStreams</p>
+    <h1>Wiki pulse globe</h1>
+    <p class="subhead">
+      Every pulse is a real Wikipedia edit happening right now, somewhere
+      in the world. Placement is approximate — each Wikipedia language
+      edition is pinned to a single representative country, not the real
+      spread of its readers and editors, and only non-bot edits to actual
+      articles are shown. During busy moments not every edit gets a pulse;
+      the counter below still counts all of them.
+    </p>
+  </header>
+
+  <div id="globe-wrap">
+    <canvas id="globe-canvas"></canvas>
+  </div>
+
+  <p id="edit-rate" class="font-mono">connecting…</p>
+
+  <ul id="ticker" aria-live="polite"></ul>
+</div>
+
+<script type="module" src="./wiki-pulse-app.js"></script>
+</body>
+</html>

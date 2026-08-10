@@ -26,3 +26,44 @@ export function articleUrl(event) {
   const path = encodeURIComponent(event.title.replace(/ /g, '_'));
   return `https://${domain}/wiki/${path}`;
 }
+
+export function createPulseBudget(maxPerSecond) {
+  let tokens = maxPerSecond;
+  let lastRefill = null;
+  return {
+    tryConsume(nowMs) {
+      if (lastRefill === null) lastRefill = nowMs;
+      const elapsedSec = (nowMs - lastRefill) / 1000;
+      tokens = Math.min(maxPerSecond, tokens + elapsedSec * maxPerSecond);
+      lastRefill = nowMs;
+      if (tokens >= 1) {
+        tokens -= 1;
+        return true;
+      }
+      return false;
+    },
+  };
+}
+
+export function createRollingRate(windowMs = 1000) {
+  const timestamps = [];
+  function prune(nowMs) {
+    while (timestamps.length && timestamps[0] < nowMs - windowMs) timestamps.shift();
+  }
+  return {
+    record(nowMs) {
+      timestamps.push(nowMs);
+      prune(nowMs);
+    },
+    rate(nowMs) {
+      prune(nowMs);
+      return timestamps.length / (windowMs / 1000);
+    },
+  };
+}
+
+export function pulseOpacity(elapsedMs, fadeMs = 2500) {
+  if (elapsedMs <= 0) return 1;
+  if (elapsedMs >= fadeMs) return 0;
+  return 1 - elapsedMs / fadeMs;
+}

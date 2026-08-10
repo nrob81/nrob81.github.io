@@ -78,3 +78,55 @@ test('articleUrl builds a real wikipedia.org link with spaces as underscores', (
     'https://hu.wikipedia.org/wiki/Kom%C3%A1rom_v%C3%A1ra'
   );
 });
+
+import {
+  createPulseBudget,
+  createRollingRate,
+  pulseOpacity,
+} from '../wiki-pulse-logic.js';
+
+test('createPulseBudget admits up to maxPerSecond events instantly, then blocks', () => {
+  const budget = createPulseBudget(3);
+  const t0 = 1000;
+  assert.equal(budget.tryConsume(t0), true);
+  assert.equal(budget.tryConsume(t0), true);
+  assert.equal(budget.tryConsume(t0), true);
+  assert.equal(budget.tryConsume(t0), false, 'fourth event in the same instant should be dropped');
+});
+
+test('createPulseBudget refills over time', () => {
+  const budget = createPulseBudget(2);
+  const t0 = 1000;
+  assert.equal(budget.tryConsume(t0), true);
+  assert.equal(budget.tryConsume(t0), true);
+  assert.equal(budget.tryConsume(t0), false);
+  // half a second later, at 2/sec, one more token should be available
+  assert.equal(budget.tryConsume(t0 + 500), true);
+  assert.equal(budget.tryConsume(t0 + 500), false);
+});
+
+test('createRollingRate reports events per second over the trailing window', () => {
+  const rate = createRollingRate(1000);
+  const t0 = 5000;
+  rate.record(t0);
+  rate.record(t0 + 200);
+  rate.record(t0 + 400);
+  assert.equal(rate.rate(t0 + 400), 3, 'three events within the last 1000ms');
+});
+
+test('createRollingRate drops events that fall outside the trailing window', () => {
+  const rate = createRollingRate(1000);
+  rate.record(1000);
+  rate.record(1200);
+  assert.equal(rate.rate(2200), 1, 'only the event at 1200 is within 1000ms of 2200');
+});
+
+test('pulseOpacity is 1 at birth and fades linearly to 0 by fadeMs', () => {
+  assert.equal(pulseOpacity(0, 2000), 1);
+  assert.equal(pulseOpacity(1000, 2000), 0.5);
+  assert.equal(pulseOpacity(2000, 2000), 0);
+});
+
+test('pulseOpacity clamps to 0 past fadeMs', () => {
+  assert.equal(pulseOpacity(5000, 2000), 0);
+});

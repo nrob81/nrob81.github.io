@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mapa tieňov Komárna</title>
+    <meta name="description" content="Skutočné pôdorysy budov v Komárne, so živo počítanou polohou slnka a vrhanými tieňmi pre ktorýkoľvek čas dnešného dňa — užitočné na zistenie, či bude dané miesto ešte neskôr v tieni.">
+    <meta name="author" content="Róbert Natkay">
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://www.nrcode.com/komarom-shadows-sk.html">
+    <meta property="og:title" content="Mapa tieňov Komárna">
+    <meta property="og:description" content="Skutočné pôdorysy budov v Komárne, so živo počítanou polohou slnka a vrhanými tieňmi pre ktorýkoľvek čas dnešného dňa — užitočné na zistenie, či bude dané miesto ešte neskôr v tieni.">
+    <meta property="og:url" content="https://www.nrcode.com/komarom-shadows-sk.html">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="" />
+    <link rel="stylesheet" href="./komarom-shadows.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top-links">
+    <a class="back" href="/">&larr; nrcode.com</a>
+    <span class="lang-switch">
+      <a href="./komarom-shadows.html">🇬🇧 EN</a>
+      <a href="./komarom-shadows-hu.html">🇭🇺 HU</a>
+      <a href="./komarom-shadows-sk.html" aria-current="page">🇸🇰 SK</a>
+    </span>
+  </div>
+
+  <header>
+    <p class="eyebrow font-mono">naživo · OpenStreetMap + Overpass</p>
+    <h1>Mapa tieňov Komárna</h1>
+    <p class="subhead">
+      Skutočné pôdorysy budov pre Komárno, so slnkom a vrhanými tieňmi
+      počítanými naživo pre ktorýkoľvek čas dnešného dňa. Väčšina budov
+      v OpenStreetMap nemá zaznamenanú výšku, takže dĺžka tieňa je tu
+      odhad (z výšky budovy, ak je známa, inak odhad podľa typickej
+      veľkosti budovy) — vhodné na približný pocit „slnečno alebo v tieni",
+      nie na presnú predpoveď.
+    </p>
+  </header>
+
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="dusk-overlay"></div>
+    <div id="loading-overlay">
+      <p id="loading-text" class="font-mono">načítavam mapu…</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="range" id="time-slider" disabled />
+    <span id="time-label" class="font-mono">--:--</span>
+  </div>
+
+  <p id="status">načítavam mapu…</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin=""></script>
+<script>
+  window.KOMAROM_STRINGS = {
+    locale: 'sk-SK',
+    mapReady: 'mapa pripravená — údaje o budovách ešte nie sú načítané',
+    downloading: (p) => p.percent != null
+      ? `sťahovanie údajov o budovách — ${p.percent}%`
+      : `sťahovanie údajov o budovách — ${p.megabytes.toFixed(1)} MB`,
+    overpassBusy: (status) => `Overpass preťažený (${status}) — skúšam znova…`,
+    rendering: (p) => p.complete
+      ? `${p.total.toLocaleString('sk-SK')} budov načítaných`
+      : `vykresľovanie budov — ${p.done.toLocaleString('sk-SK')} / ${p.total.toLocaleString('sk-SK')}`,
+    loadError: (msg) => `nepodarilo sa načítať údaje o budovách — ${msg} — skúste obnoviť stránku`,
+  };
+</script>
+<script type="module" src="./komarom-shadows-app.js"></script>
+
+</body>
+</html>

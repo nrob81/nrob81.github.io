@@ -1,0 +1,192 @@
+:root {
+  --bg: #f4f1ea;
+  --surface: #faf8f3;
+  --ink: #241f18;
+  --muted: #6b6155;
+  --line: rgba(36, 31, 24, 0.14);
+  --accent: #b96d17;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14120e;
+    --surface: #1b1813;
+    --ink: #ece7dc;
+    --muted: #a39b8b;
+    --line: rgba(236, 231, 220, 0.14);
+    --accent: #f2a63d;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14120e;
+  --surface: #1b1813;
+  --ink: #ece7dc;
+  --muted: #a39b8b;
+  --line: rgba(236, 231, 220, 0.14);
+  --accent: #f2a63d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, "Times New Roman", serif;
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding: 1.75rem 1rem 2.5rem;
+    gap: 1.1rem;
+  }
+}
+
+.font-mono {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", "Roboto Mono", monospace;
+}
+
+.eyebrow {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h1 {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0.3rem 0 0;
+  text-wrap: balance;
+}
+
+.subhead {
+  color: var(--muted);
+  max-width: 65ch;
+}
+
+#map-wrap {
+  position: relative;
+}
+
+#map {
+  width: 100%;
+  height: 70vh;
+  min-height: 420px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+@media (max-width: 640px) {
+  #map {
+    height: 56vh;
+    min-height: 320px;
+  }
+}
+
+#dusk-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(242, 166, 61, 0.22), rgba(185, 109, 23, 0.4));
+  opacity: 0;
+  transition: opacity 400ms ease;
+  z-index: 1000;
+}
+
+#loading-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem;
+  background: var(--surface);
+  opacity: 0.97;
+  transition: opacity 300ms ease;
+  z-index: 1100;
+}
+
+#loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#loading-text {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+  font-size: 0.95rem;
+  color: var(--ink);
+  max-width: 32ch;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+#time-slider {
+  flex: 1 1 260px;
+}
+
+#time-label {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+  font-size: 0.85rem;
+  color: var(--ink);
+  min-width: 6ch;
+}
+
+#status {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.top-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.back, .lang-switch a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.back:hover, .lang-switch a:hover { color: var(--accent); }
+
+.lang-switch {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.lang-switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.lang-switch a[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 700;
+}

@@ -58,6 +58,12 @@ test('isEligibleEvent rejects malformed events', () => {
   assert.equal(isEligibleEvent({ wiki: 42 }), false);
 });
 
+test('isEligibleEvent rejects events with a missing or non-string title', () => {
+  assert.equal(isEligibleEvent(baseEvent({ title: undefined })), false);
+  assert.equal(isEligibleEvent(baseEvent({ title: 42 })), false);
+  assert.equal(isEligibleEvent(baseEvent({ title: '' })), false);
+});
+
 test('countryForWiki resolves a known code from the given table', () => {
   assert.deepEqual(countryForWiki('huwiki', TABLE), { name: 'Hungary', lat: 47.50, lng: 19.04 });
 });

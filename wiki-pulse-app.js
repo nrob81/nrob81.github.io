@@ -2,7 +2,7 @@
 // DOM/network glue for the wiki pulse globe. Pure logic lives in
 // wiki-pulse-logic.js; this file only wires it to the page and to the
 // Wikimedia EventStreams feed.
-import createGlobe from 'https://esm.sh/cobe@0.6.3';
+import createGlobe from './vendor/cobe.js';
 import {
   isRenderable,
   countryForWiki,
@@ -34,50 +34,64 @@ let phi = 0;
 // Tracked separately from the canvas element's own width/height attributes:
 // cobe reads render dimensions from `state.width`/`state.height` on every
 // frame (see cobe's official demo, which mirrors these into onRender), it
-// does not infer them from the canvas DOM element. Both the backing-store
-// attributes (for WebGL resolution) and these state fields (for cobe's
-// internal shader math) need to be kept in sync on resize.
-let renderWidth = canvas.clientWidth * 2;
-let renderHeight = canvas.clientHeight * 2;
+// does not infer them from the canvas DOM element. `DPR` must match the
+// `devicePixelRatio` passed to createGlobe below — cobe's underlying
+// renderer (phenomenon) sets canvas.width/height itself using that same
+// factor and owns gl.viewport sizing via its own resize listener, so this
+// file must not also write canvas.width/height directly (that would fight
+// phenomenon's own resize handling and leave the GL viewport stale).
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+let renderWidth = canvas.clientWidth * DPR;
+let renderHeight = canvas.clientHeight * DPR;
 
-const globe = createGlobe(canvas, {
-  devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
-  width: renderWidth,
-  height: renderHeight,
-  phi: 0,
-  theta: 0.3,
-  dark: 1,
-  diffuse: 1.2,
-  mapSamples: 16000,
-  mapBrightness: 6,
-  baseColor: [0.3, 0.3, 0.32],
-  markerColor: [0.95, 0.65, 0.24],
-  glowColor: [0.3, 0.3, 0.32],
-  markers: [],
-  onRender(state) {
-    if (!reducedMotion) {
-      phi += ROTATE_SPEED;
-    }
-    state.phi = phi;
-    state.width = renderWidth;
-    state.height = renderHeight;
+let globe = null;
+try {
+  globe = createGlobe(canvas, {
+    devicePixelRatio: DPR,
+    width: renderWidth,
+    height: renderHeight,
+    phi: 0,
+    theta: 0.3,
+    dark: 1,
+    diffuse: 1.2,
+    mapSamples: 16000,
+    mapBrightness: 6,
+    baseColor: [0.3, 0.3, 0.32],
+    markerColor: [0.95, 0.65, 0.24],
+    glowColor: [0.3, 0.3, 0.32],
+    markers: [],
+    onRender(state) {
+      if (!reducedMotion) {
+        phi += ROTATE_SPEED;
+      }
+      state.phi = phi;
+      state.width = renderWidth;
+      state.height = renderHeight;
 
-    const now = Date.now();
-    for (let i = markers.length - 1; i >= 0; i--) {
-      if (now - markers[i].bornAt >= PULSE_FADE_MS) markers.splice(i, 1);
-    }
-    state.markers = markers.map((m) => ({
-      location: [m.lat, m.lng],
-      size: reducedMotion ? BASE_MARKER_SIZE : BASE_MARKER_SIZE * pulseOpacity(now - m.bornAt, PULSE_FADE_MS),
-    }));
-  },
-});
+      const now = Date.now();
+      for (let i = markers.length - 1; i >= 0; i--) {
+        if (now - markers[i].bornAt >= PULSE_FADE_MS) markers.splice(i, 1);
+      }
+      state.markers = markers.map((m) => ({
+        location: [m.lat, m.lng],
+        size: reducedMotion ? BASE_MARKER_SIZE : BASE_MARKER_SIZE * pulseOpacity(now - m.bornAt, PULSE_FADE_MS),
+      }));
+    },
+  });
+} catch (err) {
+  console.error('wiki-pulse: failed to initialize globe', err);
+  const wrap = document.getElementById('globe-wrap');
+  if (wrap) {
+    const p = document.createElement('p');
+    p.className = 'globe-fallback';
+    p.textContent = 'The 3D globe could not load, but the live ticker below still works.';
+    wrap.appendChild(p);
+  }
+}
 
 window.addEventListener('resize', () => {
-  renderWidth = canvas.clientWidth * 2;
-  renderHeight = canvas.clientHeight * 2;
-  canvas.width = renderWidth;
-  canvas.height = renderHeight;
+  renderWidth = canvas.clientWidth * DPR;
+  renderHeight = canvas.clientHeight * DPR;
 });
 
 function addMarker(event) {
@@ -116,7 +130,7 @@ function updateRateDisplay() {
     return;
   }
   const rate = rollingRate.rate(Date.now());
-  rateEl.textContent = `~${Math.round(rate)} edits/sec worldwide`;
+  rateEl.textContent = `~${Math.round(rate)} article edits/sec (mapped Wikipedias)`;
 }
 setInterval(updateRateDisplay, 500);
 

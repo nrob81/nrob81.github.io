@@ -9,6 +9,7 @@ export function isEligibleEvent(event) {
   if (event.namespace !== 0) return false;
   if (event.type !== 'edit' && event.type !== 'new') return false;
   if (event.bot) return false;
+  if (typeof event.title !== 'string' || event.title === '') return false;
   return true;
 }
 

@@ -193,28 +193,56 @@ function renderShadowsForTime(date) {
 
 const sliderEl = document.getElementById('time-slider');
 const timeLabelEl = document.getElementById('time-label');
+const dateEl = document.getElementById('date-picker');
+
+// The sun-position formulas are only verified accurate for 1950-2050 (see
+// komarom-shadows-logic.js header), so the date picker doesn't offer dates
+// outside that range.
+const EARLIEST_DATE = '1950-01-01';
+const LATEST_DATE = '2050-12-31';
 
 function formatTime(date) {
   return date.toLocaleTimeString(STRINGS.locale, { hour: '2-digit', minute: '2-digit' });
 }
 
-function setupTimeSlider() {
-  const todayUTCMidnight = new Date(Date.UTC(
-    new Date().getUTCFullYear(),
-    new Date().getUTCMonth(),
-    new Date().getUTCDate()
-  ));
-  const { sunrise, sunset } = sunriseSunset(todayUTCMidnight, KOMARNO_CENTER[0], KOMARNO_CENTER[1]);
+function todayAtUTCMidnight() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+function formatDateForInput(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function dateInputToUTCMidnight(value) {
+  const [y, m, d] = value.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+// Recomputes sunrise/sunset for the given day and moves the slider to
+// preferredTimeMs (or "now", clamped to daylight) if provided.
+function applyDate(dateAtMidnightUTC, preferredTimeMs) {
+  const { sunrise, sunset } = sunriseSunset(dateAtMidnightUTC, KOMARNO_CENTER[0], KOMARNO_CENTER[1]);
 
   sliderEl.min = String(sunrise.getTime());
   sliderEl.max = String(sunset.getTime());
   sliderEl.step = '60000';
 
-  const now = Date.now();
-  const clamped = Math.min(Math.max(now, sunrise.getTime()), sunset.getTime());
+  const target = preferredTimeMs != null ? preferredTimeMs : Date.now();
+  const clamped = Math.min(Math.max(target, sunrise.getTime()), sunset.getTime());
   sliderEl.value = String(clamped);
   sliderEl.disabled = false;
   timeLabelEl.textContent = formatTime(new Date(clamped));
+  renderShadowsForTime(new Date(clamped));
+}
+
+function setupControls() {
+  dateEl.setAttribute('aria-label', STRINGS.dateLabel);
+  dateEl.min = EARLIEST_DATE;
+  dateEl.max = LATEST_DATE;
+  dateEl.value = formatDateForInput(todayAtUTCMidnight());
+  dateEl.disabled = false;
+  applyDate(todayAtUTCMidnight());
 
   let pending = false;
   sliderEl.addEventListener('input', () => {
@@ -229,6 +257,17 @@ function setupTimeSlider() {
         pending = false;
       }
     });
+  });
+
+  dateEl.addEventListener('change', () => {
+    if (!dateEl.value) return;
+    // Keep the same time-of-day when hopping to a different date, so
+    // browsing dates at a fixed hour ("what does 5pm look like in winter")
+    // works without also having to re-drag the slider each time.
+    const prevTime = new Date(Number(sliderEl.value));
+    const [y, m, d] = dateEl.value.split('-').map(Number);
+    const preferred = new Date(y, m - 1, d, prevTime.getHours(), prevTime.getMinutes());
+    applyDate(dateInputToUTCMidnight(dateEl.value), preferred.getTime());
   });
 }
 
@@ -268,8 +307,7 @@ async function init() {
   try {
     const elements = await fetchBuildingElements();
     await renderBuildingsChunked(elements);
-    setupTimeSlider();
-    renderShadowsForTime(new Date(Number(sliderEl.value)));
+    setupControls();
     loadingOverlayEl.classList.add('hidden');
   } catch (err) {
     console.error('komarom-shadows: failed to load buildings:', err);

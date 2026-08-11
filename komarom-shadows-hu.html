@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Komáromi árnyéktérkép</title>
-    <meta name="description" content="Valós épületalaprajzok Komáromhoz (SK), élőben számított nap- és árnyékhelyzettel a mai nap bármely időpontjára — hasznos, ha tudni akarod, egy hely napos vagy árnyékos lesz-e később.">
+    <meta name="description" content="Valós épületalaprajzok Komáromhoz (SK), élőben számított nap- és árnyékhelyzettel bármely nap bármely időpontjára — hasznos, ha tudni akarod, egy hely napos vagy árnyékos lesz-e később.">
     <meta name="author" content="Róbert Natkay">
     <meta name="robots" content="noindex">
     <link rel="canonical" href="https://www.nrcode.com/komarom-shadows-hu.html">
     <meta property="og:title" content="Komáromi árnyéktérkép">
-    <meta property="og:description" content="Valós épületalaprajzok Komáromhoz (SK), élőben számított nap- és árnyékhelyzettel a mai nap bármely időpontjára — hasznos, ha tudni akarod, egy hely napos vagy árnyékos lesz-e később.">
+    <meta property="og:description" content="Valós épületalaprajzok Komáromhoz (SK), élőben számított nap- és árnyékhelyzettel bármely nap bármely időpontjára — hasznos, ha tudni akarod, egy hely napos vagy árnyékos lesz-e később.">
     <meta property="og:url" content="https://www.nrcode.com/komarom-shadows-hu.html">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="" />
@@ -31,7 +31,7 @@
     <h1>Komáromi árnyéktérkép</h1>
     <p class="subhead">
       Valós épület-alaprajzok Komáromhoz, élőben számított nappal és
-      vetett árnyékokkal a mai nap bármely időpontjára. A legtöbb
+      vetett árnyékokkal bármely nap bármely időpontjára. A legtöbb
       OpenStreetMap-épülethez nincs rögzített magasság, ezért az
       árnyékhossz itt becslés (ismert épületmagasságból, vagy ha az
       nincs, a jellemző épületméretből) — jó egy hozzávetőleges
@@ -48,6 +48,7 @@
   </div>
 
   <div class="controls">
+    <input type="date" id="date-picker" class="font-mono" disabled />
     <input type="range" id="time-slider" disabled />
     <span id="time-label" class="font-mono">--:--</span>
   </div>
@@ -60,6 +61,7 @@
 <script>
   window.KOMAROM_STRINGS = {
     locale: 'hu-HU',
+    dateLabel: 'Dátum, amelyre az árnyékokat mutatja',
     mapReady: 'térkép kész — épületadatok még nincsenek betöltve',
     downloading: (p) => p.percent != null
       ? `épületadatok letöltése — ${p.percent}%`

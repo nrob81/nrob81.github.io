@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mapa tieňov Komárna</title>
-    <meta name="description" content="Skutočné pôdorysy budov v Komárne, so živo počítanou polohou slnka a vrhanými tieňmi pre ktorýkoľvek čas dnešného dňa — užitočné na zistenie, či bude dané miesto ešte neskôr v tieni.">
+    <meta name="description" content="Skutočné pôdorysy budov v Komárne, so živo počítanou polohou slnka a vrhanými tieňmi pre ktorýkoľvek čas ktoréhokoľvek dňa — užitočné na zistenie, či bude dané miesto ešte neskôr v tieni.">
     <meta name="author" content="Róbert Natkay">
     <meta name="robots" content="noindex">
     <link rel="canonical" href="https://www.nrcode.com/komarom-shadows-sk.html">
     <meta property="og:title" content="Mapa tieňov Komárna">
-    <meta property="og:description" content="Skutočné pôdorysy budov v Komárne, so živo počítanou polohou slnka a vrhanými tieňmi pre ktorýkoľvek čas dnešného dňa — užitočné na zistenie, či bude dané miesto ešte neskôr v tieni.">
+    <meta property="og:description" content="Skutočné pôdorysy budov v Komárne, so živo počítanou polohou slnka a vrhanými tieňmi pre ktorýkoľvek čas ktoréhokoľvek dňa — užitočné na zistenie, či bude dané miesto ešte neskôr v tieni.">
     <meta property="og:url" content="https://www.nrcode.com/komarom-shadows-sk.html">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="" />
@@ -31,7 +31,7 @@
     <h1>Mapa tieňov Komárna</h1>
     <p class="subhead">
       Skutočné pôdorysy budov pre Komárno, so slnkom a vrhanými tieňmi
-      počítanými naživo pre ktorýkoľvek čas dnešného dňa. Väčšina budov
+      počítanými naživo pre ktorýkoľvek čas ktoréhokoľvek dňa. Väčšina budov
       v OpenStreetMap nemá zaznamenanú výšku, takže dĺžka tieňa je tu
       odhad (z výšky budovy, ak je známa, inak odhad podľa typickej
       veľkosti budovy) — vhodné na približný pocit „slnečno alebo v tieni",
@@ -48,6 +48,7 @@
   </div>
 
   <div class="controls">
+    <input type="date" id="date-picker" class="font-mono" disabled />
     <input type="range" id="time-slider" disabled />
     <span id="time-label" class="font-mono">--:--</span>
   </div>
@@ -60,6 +61,7 @@
 <script>
   window.KOMAROM_STRINGS = {
     locale: 'sk-SK',
+    dateLabel: 'Dátum, pre ktorý sa zobrazujú tiene',
     mapReady: 'mapa pripravená — údaje o budovách ešte nie sú načítané',
     downloading: (p) => p.percent != null
       ? `sťahovanie údajov o budovách — ${p.percent}%`

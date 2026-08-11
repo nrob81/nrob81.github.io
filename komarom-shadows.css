@@ -142,6 +142,15 @@ h1 {
   flex-wrap: wrap;
 }
 
+#date-picker {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+
 #time-slider {
   flex: 1 1 260px;
 }

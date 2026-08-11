@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Komárno shadow map</title>
-    <meta name="description" content="Real building footprints in Komárno, with live-computed sun and shadow for any time today — good for checking whether a spot will still be shady later.">
+    <meta name="description" content="Real building footprints in Komárno, with live-computed sun and shadow for any time on any date — good for checking whether a spot will still be shady later.">
     <meta name="author" content="Róbert Natkay">
     <meta name="robots" content="noindex">
     <link rel="canonical" href="https://www.nrcode.com/komarom-shadows.html">
     <meta property="og:title" content="Komárno shadow map">
-    <meta property="og:description" content="Real building footprints in Komárno, with live-computed sun and shadow for any time today — good for checking whether a spot will still be shady later.">
+    <meta property="og:description" content="Real building footprints in Komárno, with live-computed sun and shadow for any time on any date — good for checking whether a spot will still be shady later.">
     <meta property="og:url" content="https://www.nrcode.com/komarom-shadows.html">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="" />
@@ -31,7 +31,7 @@
     <h1>Komárno shadow map</h1>
     <p class="subhead">
       Real building footprints for Komárno, with sun and cast shadows
-      computed live for any time today. Most buildings on OpenStreetMap
+      computed live for any time on any date. Most buildings on OpenStreetMap
       have no recorded height, so shadow length here is an estimate
       (from building height where known, otherwise a guess from
       typical building size) — useful for a rough sense of "sunny or
@@ -48,6 +48,7 @@
   </div>
 
   <div class="controls">
+    <input type="date" id="date-picker" class="font-mono" disabled />
     <input type="range" id="time-slider" disabled />
     <span id="time-label" class="font-mono">--:--</span>
   </div>
@@ -60,6 +61,7 @@
 <script>
   window.KOMAROM_STRINGS = {
     locale: 'en-GB',
+    dateLabel: 'Date to show shadows for',
     mapReady: 'map ready — building data not loaded yet',
     downloading: (p) => p.percent != null
       ? `downloading building data — ${p.percent}%`
